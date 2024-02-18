@@ -8,7 +8,7 @@ const server = createServer(app);
 const io = new Server(server);
 const cors= require('cors');
 app.use(cors({
-    origin:"https://localhost:8080",
+    origin:"*",
     methods: ["GET", "POST"],
     credentials: true,
 }));
