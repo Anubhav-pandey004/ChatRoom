@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/emojionearea/3.4.2/emojionearea.css" integrity="sha512-0Nyh7Nf4sn+T48aTb6VFkhJe0FzzcOlqqZMahy/rhZ8Ii5Q9ZXG/1CbunUuEbfgxqsQfWXjnErKZosDSHVKQhQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body>
+    <div class="chatroom">
+        <div class="upper-page">
+        </div>
+        <div class="lower-page">
+            <form action="" id="send-message">
+                <div class="input">
+                <input type="text" name="message" id="message-input" placeholder="Message..">
+                </div>
+                <button class="btn">send</button>
+            </form>
+        </div>
+    </div>
+</body>
+<style>
+    body{
+    margin: 0px;
+    padding: 0px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.chatroom{
+    height: 100vh;
+    width: 80%;
+    background-color:#1C448E;
+}
+.upper-page{
+    height: 90%;
+    width: 100%;
+    background-color: transparent;
+    overflow:auto
+}
+.lower-page{
+    position: sticky;
+    width: 100%;
+    height: 10%;
+    background-color: #6F8695;
+    display: flex;
+    justify-content: start;
+    align-items: center;
+    z-index: 1;
+
+}
+.message{
+    background-color: #DBFE87;
+    width: 24%;
+    padding: 10px;
+    margin: 17px 12px;
+    border-radius: 10px;
+}
+.left{ 
+    float: left;
+    clear: both;  
+    background-color: white;
+}
+.right{
+    float: right;
+    clear: both;
+}
+#send-message{
+    width: 100%;
+    height: 70%;
+    display: flex;
+    justify-content: space-around;
+}
+#message-input{
+    width: 60%;
+    height: 50%;
+    border: 2px solid ;
+    border-radius: 50px;
+    margin:5px 10px;
+    padding: 3px;
+}
+.btn{
+    cursor: pointer;
+    border: 0px;
+    background-color: #DBFE87;
+    border-radius: 6px;
+    height: 10px;
+
+}
+.input{
+    width: 80%;
+}
+
+</style>
+<script src="http://localhost:8080/socket.io/socket.io.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/emojionearea/3.4.2/emojionearea.min.js" integrity="sha512-hkvXFLlESjeYENO4CNi69z3A1puvONQV5Uh+G4TUDayZxSLyic5Kba9hhuiNLbHqdnKNMk2PxXKm0v7KDnWkYA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script>
+const socket = io('http://localhost:8080');
+
+const form = document.getElementById("send-message");
+const messageInput = document.getElementById("message-input");
+const messageContainer = document.querySelector(".upper-page");
+const emojiselector=document.getElementById("emojiselector")
+const emojilist=document.querySelector(".emojilist")
+
+var audio=new Audio('song.mp3');
+
+$('#message-input').emojioneArea({
+    pickerPosition:"right"
+});
+
+const append=(message ,position)=>{
+    const messageElement =document.createElement('div');
+    messageElement.innerText=message;
+    messageElement.classList.add('message')
+    messageElement.classList.add(position)
+    messageContainer.append(messageElement)
+    if(position=='left'){
+        audio.play();
+    }
+}
+form.addEventListener('submit',(e)=>{
+    e.preventDefault();
+    const message=messageInput.value;
+    append(`you: ${message}`,"right")
+    socket.emit('send',message)
+    messageInput.value="";
+})
+const name=prompt("Enter your name to join");
+socket.emit("new-user-joined",name)
+
+socket.on('user-joined',data =>{
+    append(`${data} joined the chatroom`,'right')
+});
+socket.on('receive',data =>{
+    append(`${data.name}:
+    ${data.message}`,'left')
+});
+socket.on('leave',name=>{
+    append(`${name} left the chat`,'left')
+})
+</script>
+</html>
